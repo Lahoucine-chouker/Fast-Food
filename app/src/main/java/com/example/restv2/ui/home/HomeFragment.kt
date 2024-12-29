@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,31 +19,25 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-
-    // Declare the foodAdapter at the class level
     private lateinit var foodAdapter: FoodAdapter
+    private var totalPrice = 0.0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        // Categories list with "All" category
         val categories = listOf(
             "All", "Italian", "Mexican", "Desserts",
             "Japanese", "Fast Food", "Entrees", "Healthy"
         )
 
-        // Set up category RecyclerView (Horizontal Layout)
-        binding.categoryRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-
-        // Set up food RecyclerView (Grid Layout)
+        binding.categoryRecyclerView.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.foodRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
 
-        // Create food items for the fragment
         val foodItems = mutableListOf(
             FoodItem(R.drawable.burger_image, "$12.99", "Cheeseburger", "Fast Food", 0),
             FoodItem(R.drawable.images, "$18.99", "Honey-Apple Chicken", "Entrees", 0),
@@ -60,7 +55,6 @@ class HomeFragment : Fragment() {
             FoodItem(R.drawable.donut_image, "$3.99", "Chocolate Donut", "Desserts", 0)
         )
 
-        // Set up food adapter
         foodAdapter = FoodAdapter(foodItems) { position, increase ->
             val item = foodItems[position]
             if (increase) {
@@ -68,33 +62,72 @@ class HomeFragment : Fragment() {
             } else if (item.quantity > 0) {
                 item.quantity--
             }
-            foodAdapter.notifyItemChanged(position) // Notify the adapter that an item has changed
+            foodAdapter.notifyItemChanged(position)
+            updateCartDisplay(foodItems)
         }
 
-        // Set foodAdapter to RecyclerView
         binding.foodRecyclerView.adapter = foodAdapter
 
-        // Category selection logic
         val categoryAdapter = CategoryAdapter(categories) { selectedCategory ->
             val filteredItems = if (selectedCategory == "All") {
                 foodItems
             } else {
                 foodItems.filter { it.category == selectedCategory }
             }
-            foodAdapter.updateItems(filteredItems) // Update the food list
+            foodAdapter.updateItems(filteredItems)
             binding.titleTextView.text = if (selectedCategory == "All") {
                 "Popular Menu (All)"
             } else {
                 "Popular Menu ($selectedCategory)"
             }
+            updateCartDisplay(foodItems)
         }
 
-        // Set category adapter
         binding.categoryRecyclerView.adapter = categoryAdapter
+
+        // Initialize cart displays
+        binding.cartLayout.visibility = View.GONE
+        updateCartDisplay(foodItems)
 
         return root
     }
 
+    private fun updateCartDisplay(foodItems: List<FoodItem>) {
+        val selectedItems = foodItems.filter { it.quantity > 0 }
+
+        if (selectedItems.isEmpty()) {
+            binding.cartLayout.visibility = View.GONE
+            return
+        }
+
+        binding.cartLayout.visibility = View.VISIBLE
+
+        // Calculate total price
+        totalPrice = selectedItems.sumOf { item ->
+            item.price.replace("$", "").toDouble() * item.quantity
+        }
+
+        // Update total price with improved formatting
+        binding.totalPriceTextView.text = String.format("$%.2f", totalPrice)
+
+        // Create styled cart items text
+        val cartItemsText = StringBuilder()
+        selectedItems.forEach { item ->
+            val itemTotal = item.price.replace("$", "").toDouble() * item.quantity
+            cartItemsText.append(
+                "• ${item.name}\n" +
+                        "  ${item.quantity}x • ${item.price} each\n" +
+                        "  Subtotal: $${String.format("%.2f", itemTotal)}\n\n"
+            )
+        }
+        binding.cartItemsTextView.text = cartItemsText.toString()
+
+        // Setup checkout button click listener
+        binding.checkoutButton.setOnClickListener {
+            // Implement checkout logic
+            Toast.makeText(context, "Proceeding to checkout...", Toast.LENGTH_SHORT).show()
+        }
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

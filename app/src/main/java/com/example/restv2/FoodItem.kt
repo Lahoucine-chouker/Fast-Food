@@ -5,5 +5,9 @@ data class FoodItem(
     val price: String,
     val name: String,
     val category: String,
-    var quantity: Int // Added quantity
-)
+    var quantity: Int
+) {
+    fun getPriceValue(): Double {
+        return price.replace("$", "").toDoubleOrNull() ?: 0.0
+    }
+}

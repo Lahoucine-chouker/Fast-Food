@@ -1,10 +1,13 @@
 package com.example.restv2
+
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+
 class FoodAdapter(
     private var foodItems: List<FoodItem>,
     private val onQuantityChanged: (position: Int, increase: Boolean) -> Unit
@@ -18,26 +21,19 @@ class FoodAdapter(
     override fun onBindViewHolder(holder: FoodViewHolder, position: Int) {
         val foodItem = foodItems[position]
 
-        holder.foodPrice.text = foodItem.price
+        holder.foodPrice.text = "$${foodItem.price}"
         holder.foodDescription.text = foodItem.name
         holder.foodImage.setImageResource(foodItem.image)
         holder.quantityText.text = foodItem.quantity.toString()
 
-        // Increase quantity
         holder.increaseQuantityButton.setOnClickListener {
-            foodItem.quantity++
-            notifyItemChanged(position) // Notify that this item has changed
+            onQuantityChanged(position, true)
         }
 
-        // Decrease quantity
         holder.decreaseQuantityButton.setOnClickListener {
-            if (foodItem.quantity > 0) {
-                foodItem.quantity--
-                notifyItemChanged(position) // Notify that this item has changed
-            }
+            onQuantityChanged(position, false)
         }
     }
-
     override fun getItemCount(): Int {
         return foodItems.size
     }
