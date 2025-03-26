@@ -21,6 +21,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var foodAdapter: FoodAdapter
     private var totalPrice = 0.0
+    private var isCartExpanded = true // Track the state of the cart (expanded or collapsed)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -89,6 +90,32 @@ class HomeFragment : Fragment() {
         binding.cartLayout.visibility = View.GONE
         updateCartDisplay(foodItems)
 
+        // Set up click listener for "See All Orders" icon
+        binding.seeAllOrdersIcon.setOnClickListener {
+            if (isCartExpanded) {
+                // Collapse the cart details (hide the NestedScrollView, See Details button, etc.)
+                binding.cartItemsTextView.visibility = View.GONE
+                binding.seeDetailsButton.visibility = View.GONE
+                binding.seeAllOrdersIcon.setImageResource(android.R.drawable.ic_menu_more) // Change icon to indicate "expand"
+                isCartExpanded = false
+            } else {
+                // Expand the cart details
+                binding.cartItemsTextView.visibility = View.VISIBLE
+                binding.seeDetailsButton.visibility = View.VISIBLE
+                binding.seeAllOrdersIcon.setImageResource(android.R.drawable.ic_menu_view) // Change icon to indicate "view"
+                isCartExpanded = true
+            }
+        }
+
+        // Set up click listener for "Minimize Order" icon
+        binding.minimizeOrderIcon.setOnClickListener {
+            // Clear the cart (reset quantities to 0)
+            foodItems.forEach { it.quantity = 0 }
+            foodAdapter.notifyDataSetChanged()
+            updateCartDisplay(foodItems)
+            Toast.makeText(context, "Order cleared", Toast.LENGTH_SHORT).show()
+        }
+
         return root
     }
 
@@ -124,10 +151,16 @@ class HomeFragment : Fragment() {
 
         // Setup checkout button click listener
         binding.checkoutButton.setOnClickListener {
-            // Implement checkout logic
             Toast.makeText(context, "Proceeding to checkout...", Toast.LENGTH_SHORT).show()
         }
+
+        // Setup see details button click listener (optional)
+        binding.seeDetailsButton.setOnClickListener {
+            Toast.makeText(context, "Showing order details...", Toast.LENGTH_SHORT).show()
+            // You can navigate to a detailed order screen here
+        }
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

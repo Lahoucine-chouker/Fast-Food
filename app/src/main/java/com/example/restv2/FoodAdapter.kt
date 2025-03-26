@@ -21,7 +21,7 @@ class FoodAdapter(
     override fun onBindViewHolder(holder: FoodViewHolder, position: Int) {
         val foodItem = foodItems[position]
 
-        holder.foodPrice.text = "$${foodItem.price}"
+        holder.foodPrice.text = "${foodItem.price}"
         holder.foodDescription.text = foodItem.name
         holder.foodImage.setImageResource(foodItem.image)
         holder.quantityText.text = foodItem.quantity.toString()

@@ -8,6 +8,6 @@ data class FoodItem(
     var quantity: Int
 ) {
     fun getPriceValue(): Double {
-        return price.replace("$", "").toDoubleOrNull() ?: 0.0
+        return price.replace("", "").toDoubleOrNull() ?: 0.0
     }
 }
